@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>团建分组查询系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            background: linear-gradient(to right, #3494E6, #EC6EAD);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 26px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .instructions {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            color: #555;
+            border-left: 4px solid #3494E6;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 8px;
+            color: #3494E6;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus {
+            border-color: #3494E6;
+            box-shadow: 0 0 0 3px rgba(52, 148, 230, 0.2);
+            outline: none;
+        }
+        
+        .btn {
+            background: linear-gradient(to right, #3494E6, #EC6EAD);
+            color: white;
+            border: none;
+            padding: 16px;
+            width: 100%;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(52, 148, 230, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 148, 230, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(to right, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease;
+            border: 1px solid #e0e0e0;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result h2 {
+            color: #3494E6;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+        
+        .group-number {
+            font-size: 52px;
+            font-weight: 700;
+            color: #EC6EAD;
+            margin: 15px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .group-info {
+            margin-top: 20px;
+            font-size: 15px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .seat-map {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .seat-map h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #555;
+            font-size: 18px;
+        }
+        
+        .table-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .table {
+            height: 80px;
+            background: linear-gradient(to bottom right, #3494E6, #EC6EAD);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .table.highlight {
+            background: linear-gradient(to bottom right, #FF416C, #FF4B2B);
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(255, 65, 108, 0.4);
+        }
+        
+        .footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            margin-top: 30px;
+            padding: 0 20px;
+        }
+        
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .group-number {
+                font-size: 42px;
+            }
+            
+            .table-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>2025年10月18日团建分组查询</h1>
+            <p>请输入您的信息查询所属分组</p>
+        </div>
+        
+        <div class="content">
+            <div class="instructions">
+                <h3>使用说明</h3>
+                <ol>
+                    <li>请输入您的手机号和身份证后4位</li>
+                    <li>点击查询按钮获取您的分组信息</li>
+                    <li>如有问题，请联系会务组</li>
+                </ol>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">手机号码</label>
+                <input type="tel" id="phone" placeholder="请输入11位手机号码" maxlength="11">
+            </div>
+            
+            <div class="form-group">
+                <label for="idCard">身份证后4位</label>
+                <input type="text" id="idCard" placeholder="请输入身份证后4位" maxlength="4">
+                <div class="error" id="idCardError">请输入正确的身份证后4位数字</div>
+            </div>
+            
+            <button class="btn" id="queryBtn">查询分组</button>
+            
+            <div class="result" id="result">
+                <h2>您的分组信息</h2>
+                <div class="group-number" id="groupNumber">第 0 组</div>
+
+                <div class="group-info">
+                    <p id="groupDetail">分组详情加载中...</p>
+                </div>
+            </div>
+            
+            <div class="seat-map" id="seatMap">
+                <h3>团建活动示意图</h3>
+                <div class="table-container" id="tableContainer">
+                    <!-- 表格将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>如有问题，请联系会务组：王则彧 13524665915</p>
+        <p>© 2025 恒力期货有限公司</p>
+    </div>
+
+    <script>
+        // 模拟数据 - 12组人员信息
+        const groupData = [
+            // 第1组
+            [
+                { phone: '13800138001', idCard: '1234' },
+                { phone: '13800138002', idCard: '2345' },
+                { phone: '13800138003', idCard: '3456' },
+                { phone: '13800138004', idCard: '4567' },
+                { phone: '13800138005', idCard: '5678' },
+                { phone: '13800138006', idCard: '6789' },
+                { phone: '13800138007', idCard: '7890' },
+                { phone: '13800138008', idCard: '8901' },
+                { phone: '13800138009', idCard: '9012' },
+                { phone: '13800138010', idCard: '0123' },
+                { phone: '13800138011', idCard: '1122' },
+                { phone: '13800138012', idCard: '2233' },
+                { phone: '13800138013', idCard: '3344' },
+                { phone: '13800138014', idCard: '4455' }
+            ],
+            // 第2组
+            [
+                { phone: '13900139001', idCard: '1357' },
+                { phone: '13900139002', idCard: '2468' },
+                { phone: '13900139003', idCard: '3579' },
+                { phone: '13900139004', idCard: '4680' },
+                { phone: '13900139005', idCard: '5791' },
+                { phone: '13900139006', idCard: '6802' },
+                { phone: '13900139007', idCard: '7913' },
+                { phone: '13900139008', idCard: '8024' },
+                { phone: '13900139009', idCard: '9135' },
+                { phone: '13900139010', idCard: '0246' },
+                { phone: '13900139011', idCard: '1133' },
+                { phone: '13900139012', idCard: '2244' },
+                { phone: '13900139013', idCard: '3355' },
+                { phone: '13900139014', idCard: '4466' }
+            ],
+            // 第3组
+            [
+                { phone: '15000150001', idCard: '1597' },
+                { phone: '15000150002', idCard: '2684' },
+                { phone: '15000150003', idCard: '3791' },
+                { phone: '15000150004', idCard: '4802' },
+                { phone: '15000150005', idCard: '5913' },
+                { phone: '15000150006', idCard: '6024' },
+                { phone: '15000150007', idCard: '7135' },
+                { phone: '15000150008', idCard: '8246' },
+                { phone: '15000150009', idCard: '9357' },
+                { phone: '15000150010', idCard: '0468' },
+                { phone: '15000150011', idCard: '1155' },
+                { phone: '15000150012', idCard: '2266' },
+                { phone: '15000150013', idCard: '3377' },
+                { phone: '15000150014', idCard: '4488' }
+            ],
+            // 第4组
+            [
+                { phone: '15100151001', idCard: '1689' },
+                { phone: '15100151002', idCard: '2790' },
+                { phone: '15100151003', idCard: '3801' },
+                { phone: '15100151004', idCard: '4912' },
+                { phone: '15100151005', idCard: '5023' },
+                { phone: '15100151006', idCard: '6134' },
+                { phone: '15100151007', idCard: '7245' },
+                { phone: '15100151008', idCard: '8356' },
+                { phone: '15100151009', idCard: '9467' },
+                { phone: '15100151010', idCard: '0578' },
+                { phone: '15100151011', idCard: '1166' },
+                { phone: '15100151012', idCard: '2277' },
+                { phone: '15100151013', idCard: '3388' },
+                { phone: '15100151014', idCard: '4499' }
+            ],
+            // 第5组
+            [
+                { phone: '15200152001', idCard: '1777' },
+                { phone: '15200152002', idCard: '2888' },
+                { phone: '15200152003', idCard: '3999' },
+                { phone: '15200152004', idCard: '4000' },
+                { phone: '15200152005', idCard: '5111' },
+                { phone: '15200152006', idCard: '6222' },
+                { phone: '15200152007', idCard: '7333' },
+                { phone: '15200152008', idCard: '8444' },
+                { phone: '15200152009', idCard: '9555' },
+                { phone: '15200152010', idCard: '0666' },
+                { phone: '15200152011', idCard: '1177' },
+                { phone: '15200152012', idCard: '2288' },
+                { phone: '15200152013', idCard: '3399' },
+                { phone: '15200152014', idCard: '4400' }
+            ],
+            // 第6组
+            [
+                { phone: '15300153001', idCard: '1865' },
+                { phone: '15300153002', idCard: '2974' },
+                { phone: '15300153003', idCard: '3083' },
+                { phone: '15300153004', idCard: '4192' },
+                { phone: '15300153005', idCard: '5201' },
+                { phone: '15300153006', idCard: '6310' },
+                { phone: '15300153007', idCard: '7429' },
+                { phone: '15300153008', idCard: '8538' },
+                { phone: '15300153009', idCard: '9647' },
+                { phone: '15300153010', idCard: '0756' },
+                { phone: '15300153011', idCard: '1188' },
+                { phone: '15300153012', idCard: '2299' },
+                { phone: '15300153013', idCard: '3300' },
+                { phone: '15300153014', idCard: '4411' }
+            ],
+            // 第7组
+            [
+                { phone: '15500155001', idCard: '1953' },
+                { phone: '15500155002', idCard: '2062' },
+                { phone: '15500155003', idCard: '3171' },
+                { phone: '15500155004', idCard: '4280' },
+                { phone: '15500155005', idCard: '5399' },
+                { phone: '15500155006', idCard: '6408' },
+                { phone: '15500155007', idCard: '7517' },
+                { phone: '15500155008', idCard: '8626' },
+                { phone: '15500155009', idCard: '9735' },
+                { phone: '15500155010', idCard: '0844' },
+                { phone: '15500155011', idCard: '1199' },
+                { phone: '15500155012', idCard: '2200' },
+                { phone: '15500155013', idCard: '3311' },
+                { phone: '15500155014', idCard: '4422' }
+            ],
+            // 第8组
+            [
+                { phone: '15600156001', idCard: '2048' },
+                { phone: '15600156002', idCard: '3157' },
+                { phone: '15600156003', idCard: '4266' },
+                { phone: '15600156004', idCard: '5375' },
+                { phone: '15600156005', idCard: '6484' },
+                { phone: '15600156006', idCard: '7593' },
+                { phone: '15600156007', idCard: '8602' },
+                { phone: '15600156008', idCard: '9711' },
+                { phone: '15600156009', idCard: '0820' },
+                { phone: '15600156010', idCard: '1939' },
+                { phone: '15600156011', idCard: '1200' },
+                { phone: '15600156012', idCard: '2311' },
+                { phone: '15600156013', idCard: '3422' },
+                { phone: '15600156014', idCard: '4533' }
+            ],
+            // 第9组
+            [
+                { phone: '15700157001', idCard: '2137' },
+                { phone: '15700157002', idCard: '3246' },
+                { phone: '15700157003', idCard: '4355' },
+                { phone: '15700157004', idCard: '5464' },
+                { phone: '15700157005', idCard: '6573' },
+                { phone: '15700157006', idCard: '7682' },
+                { phone: '15700157007', idCard: '8791' },
+                { phone: '15700157008', idCard: '9800' },
+                { phone: '15700157009', idCard: '0919' },
+                { phone: '15700157010', idCard: '1028' },
+                { phone: '15700157011', idCard: '1211' },
+                { phone: '15700157012', idCard: '2322' },
+                { phone: '15700157013', idCard: '3433' },
+                { phone: '15700157014', idCard: '4544' }
+            ],
+            // 第10组
+            [
+                { phone: '15800158001', idCard: '2226' },
+                { phone: '15800158002', idCard: '3335' },
+                { phone: '15800158003', idCard: '4444' },
+                { phone: '15800158004', idCard: '5553' },
+                { phone: '15800158005', idCard: '6662' },
+                { phone: '15800158006', idCard: '7771' },
+                { phone: '15800158007', idCard: '8880' },
+                { phone: '15800158008', idCard: '9999' },
+                { phone: '15800158009', idCard: '0008' },
+                { phone: '15800158010', idCard: '1117' },
+                { phone: '15800158011', idCard: '1222' },
+                { phone: '15800158012', idCard: '2333' },
+                { phone: '15800158013', idCard: '3444' },
+                { phone: '15800158014', idCard: '4555' }
+            ],
+            // 第11组
+            [
+                { phone: '15900159001', idCard: '2315' },
+                { phone: '15900159002', idCard: '3424' },
+                { phone: '15900159003', idCard: '4533' },
+                { phone: '15900159004', idCard: '5642' },
+                { phone: '15900159005', idCard: '6751' },
+                { phone: '15900159006', idCard: '7860' },
+                { phone: '15900159007', idCard: '8979' },
+                { phone: '15900159008', idCard: '9088' },
+                { phone: '15900159009', idCard: '0197' },
+                { phone: '15900159010', idCard: '1206' },
+                { phone: '15900159011', idCard: '1233' },
+                { phone: '15900159012', idCard: '2344' },
+                { phone: '15900159013', idCard: '3455' },
+                { phone: '15900159014', idCard: '4566' }
+            ],
+            // 第12组
+            [
+                { phone: '17000170001', idCard: '2404' },
+                { phone: '17000170002', idCard: '3513' },
+                { phone: '17000170003', idCard: '4622' },
+                { phone: '17000170004', idCard: '5731' },
+                { phone: '17000170005', idCard: '6840' },
+                { phone: '17000170006', idCard: '7959' },
+                { phone: '17000170007', idCard: '8068' },
+                { phone: '17000170008', idCard: '9177' },
+                { phone: '17000170009', idCard: '0286' },
+                { phone: '17000170010', idCard: '1395' },
+                { phone: '17000170011', idCard: '1244' },
+                { phone: '17000170012', idCard: '2355' },
+                { phone: '17000170013', idCard: '3466' },
+                { phone: '17000170014', idCard: '4577' }
+            ]
+        ];
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            const queryBtn = document.getElementById('queryBtn');
+            const resultDiv = document.getElementById('result');
+            const seatMapDiv = document.getElementById('seatMap');
+            const groupNumber = document.getElementById('groupNumber');
+            const groupDetail = document.getElementById('groupDetail');
+            const phoneInput = document.getElementById('phone');
+            const idCardInput = document.getElementById('idCard');
+            const idCardError = document.getElementById('idCardError');
+            const tableContainer = document.getElementById('tableContainer');
+            
+            // 生成座次表
+            for (let i = 0; i < 12; i++) {
+                const table = document.createElement('div');
+                table.className = 'table';
+                table.textContent = `第${i+1}组`;
+                table.setAttribute('data-group', i+1);
+                tableContainer.appendChild(table);
+            }
+            
+            // 查询按钮点击事件
+            queryBtn.addEventListener('click', function() {
+                const phone = phoneInput.value.trim();
+                const idCard = idCardInput.value.trim();
+                
+                // 验证输入
+                if (!phone || !idCard) {
+                    alert('请填写完整信息');
+                    return;
+                }
+                
+                if (phone.length !== 11 || isNaN(phone)) {
+                    alert('请输入正确的11位手机号码');
+                    return;
+                }
+                
+                if (idCard.length !== 4 || isNaN(idCard)) {
+                    idCardError.style.display = 'block';
+                    return;
+                } else {
+                    idCardError.style.display = 'none';
+                }
+                
+                // 查找用户所在组
+                let userGroup = 0;
+                let found = false;
+                
+                for (let i = 0; i < groupData.length; i++) {
+                    for (let j = 0; j < groupData[i].length; j++) {
+                        if (groupData[i][j].phone === phone && groupData[i][j].idCard === idCard) {
+                            userGroup = i + 1;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) break;
+                }
+                
+                // 显示结果
+                if (userGroup > 0) {
+                    groupNumber.textContent = `第 ${userGroup} 组`;
+                    groupDetail.textContent = `您被分在第${userGroup}组，请乘坐${getBusInfo(userGroup)}。`;
+                    resultDiv.style.display = 'block';
+                    seatMapDiv.style.display = 'block';
+
+                    // 高亮显示对应组别
+                    document.querySelectorAll('.table').forEach(table => {
+                        table.classList.remove('highlight');
+                        if (parseInt(table.getAttribute('data-group')) === userGroup) {
+                            table.classList.add('highlight');
+                        }
+                    });
+
+                    // 滚动到结果区域
+                    resultDiv.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    alert('未找到匹配的分组信息，请检查输入是否正确');
+                }
+            });
+
+            // 身份证输入框只允许输入数字
+            idCardInput.addEventListener('input', function() {
+                this.value = this.value.replace(/\D/g, '');
+                if (this.value.length === 4) {
+                    idCardError.style.display = 'none';
+                }
+            });
+
+            // 手机号输入框只允许输入数字
+            phoneInput.addEventListener('input', function() {
+                this.value = this.value.replace(/\D/g, '');
+            });
+
+            // 根据组号返回班车信息（4辆班车，每辆承载3个小组）
+            function getBusInfo(group) {
+                const busInfo = {
+                    1: { busNumber: '1号班车', plateNumber: '京A·12345', departureTime: '07:00', groups: [1, 2, 3] },
+                    2: { busNumber: '2号班车', plateNumber: '京A·12346', departureTime: '07:00', groups: [4, 5, 6] },
+                    3: { busNumber: '3号班车', plateNumber: '京A·12347', departureTime: '07:00', groups: [7, 8, 9] },
+                    4: { busNumber: '4号班车', plateNumber: '京A·12348', departureTime: '07:00', groups: [10, 11, 12] }
+                };
+
+                // 查找该组对应的班车
+                let bus = null;
+                for (const key in busInfo) {
+                    if (busInfo[key].groups.includes(group)) {
+                        bus = busInfo[key];
+                        break;
+                    }
+                }
+
+                if (bus) {
+                    return `${bus.busNumber}（车牌号：${bus.plateNumber}），发车时间：${bus.departureTime}，同车小组：${bus.groups.join('、')}组`;
+                }
+
+                return '班车信息未分配';
+            }
+        });
+    </script>
+</body>
+</html>
